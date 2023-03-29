@@ -2,53 +2,53 @@
 import React, { useEffect, useState } from 'react'
 import { useTaskContext } from '../../context/TaskContext';
 import { useRouter } from 'next/navigation';
+import { useForm } from 'react-hook-form';
 
 const Page = ({ params }) => {
 
-  const [task, setTask] = useState({ title: '', description: '' });
   const { tasks, createTask, updateTask } = useTaskContext();
   const router = useRouter();
   const { id } = params;
+  const { register, handleSubmit, setValue, formState: { errors } } = useForm();
 
   useEffect(() => {
     if (id) {
       const taskFound = tasks.find((task) => task.id === id);
-      if (taskFound) setTask(taskFound);
+      if (taskFound) {
+        setValue('title', taskFound.title);
+        setValue('description', taskFound.description);
+      }
     }
-  }, [id, tasks]);
+  }, [id, tasks, setValue]);
 
-  const handleChange = (event) => {
-    const { name, value } = event.target;
-    setTask({ ...task, [name]: value });
-  }
-
-  const handleSubmit = (event) => {
-    event.preventDefault();
-
-    if (task.title.trim() === '' && task.description.trim() === '') {
+  const onSubmit = handleSubmit((data) => {
+    if (data.title.trim() === '' && data.description.trim() === '') {
       alert('Please, fill all the fields');
       return;
     }
 
     if (id) {
-      updateTask(id, task.title, task.description);
-      console.log('update');
+      updateTask(id, data.title, data.description);
     } else {
-      createTask(task.title, task.description);
+      createTask(data.title, data.description);
     }
     router.push('/');
-  }
+  });
 
   return (
-    <form onSubmit={handleSubmit}>
-      <input name="title" placeholder='Write a title'
-        value={task?.title}
-        onChange={handleChange}
+    <form onSubmit={onSubmit}>
+      <input
+        placeholder='Write a title'
+        {...register('title', { required: true })}
       />
-      <input name="description" placeholder='Write a description'
-        value={task?.description}
-        onChange={handleChange}
+      {errors.title && <span>This field is required</span>}
+
+      <input
+        placeholder='Write a description'
+        {...register('description', { required: true })}
       />
+      {errors.description && <span>This field is required</span>}
+
       <button type='submit'>
         {id ? 'Update' : 'Create'}
       </button>
