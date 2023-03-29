@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react'
 import { useTaskContext } from '../../context/TaskContext';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
+import { toast } from 'react-hot-toast';
 
 const Page = ({ params }) => {
 
@@ -23,14 +24,16 @@ const Page = ({ params }) => {
 
   const onSubmit = handleSubmit((data) => {
     if (data.title.trim() === '' && data.description.trim() === '') {
-      alert('Please, fill all the fields');
+      toast.error('Please fill the fields');
       return;
     }
 
     if (id) {
       updateTask(id, data.title, data.description);
+      toast.success('Task updated successfully');
     } else {
       createTask(data.title, data.description);
+      toast.success('Task created successfully');
     }
     router.push('/');
   });
